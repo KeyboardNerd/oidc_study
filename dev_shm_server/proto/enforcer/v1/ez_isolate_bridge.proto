@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package enforcer.v1;
+
+import "enforcer/v1/ez_payload.proto";
+import "enforcer/v1/isolate_bridge.proto";
+import "enforcer/v1/isolate_state.proto";
+
+service EzIsolateBridge {
+  rpc InvokeIsolate(InvokeIsolateRequest) returns (InvokeIsolateResponse);
+  rpc StreamInvokeIsolate(stream InvokeIsolateRequest) returns (stream InvokeIsolateResponse);
+  rpc UpdateIsolateState(UpdateIsolateStateRequest) returns (UpdateIsolateStateResponse);
+}
+
+message InvokeIsolateRequest {
+  ControlPlaneMetadata control_plane_metadata = 1;
+  EzPayloadIsolateScope isolate_input_iscope = 2;
+  EzPayloadData isolate_input = 3;
+}
+
+message InvokeIsolateResponse {
+  ControlPlaneMetadata control_plane_metadata = 1;
+  EzPayloadIsolateScope isolate_output_iscope = 2;
+  EzPayloadData isolate_output = 3;
+  IsolateStatus status = 4;
+}
+
+message UpdateIsolateStateRequest {
+  IsolateState move_to_state = 1;
+}
+
+message UpdateIsolateStateResponse {
+  IsolateState current_state = 1;
+}

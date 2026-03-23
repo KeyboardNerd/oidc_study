@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package enforcer.v1;
+
+import "enforcer/v1/data_scope_type.proto";
+
+message IsolateScopeOwner {
+  bytes mapped_owner_uuid = 1;
+}
+
+message IsolateDataScope {
+  DataScopeType scope_type = 1;
+  IsolateScopeOwner mapped_scope_owner = 3;
+}

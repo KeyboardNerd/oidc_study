@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package shm_transfer;
+
+// Control plane service for shared memory data transfer.
+//
+// The gRPC channel carries ONLY small control messages:
+// - Channel setup/teardown
+// - Transfer notifications ("data is ready at offset X, size Y")
+// - Status/completion signals
+//
+// The actual bulk data travels through /dev/shm ring buffers (the data plane).
+// Payloads are NOT serialized to protobuf — they're raw bytes in shared memory.
+
+service ShmTransfer {
+  // Set up a shared memory channel. Server creates the ring buffer files.
+  // Client then opens them via ShmChannel::open().
+  rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
+
+  // Notify the server that data has been written to the shared memory channel.
+  // The server reads the data directly from /dev/shm — no data in this message.
+  rpc Send(SendRequest) returns (SendResponse);
+
+  // Bidirectional streaming: client and server exchange small control messages
+  // while bulk data flows through the shm channel.
+  rpc Stream(stream StreamMessage) returns (stream StreamMessage);
+
+  // Tear down a channel and clean up shared memory files.
+  rpc DestroyChannel(DestroyChannelRequest) returns (DestroyChannelResponse);
+}
+
+message CreateChannelRequest {
+  // Name for the channel (becomes the shm file prefix).
+  string name = 1;
+  // Ring buffer size in bytes. 0 = server default.
+  uint64 ring_size = 2;
+  // Shared memory directory. Empty = server default (/dev/shm).
+  string shm_dir = 3;
+}
+
+message CreateChannelResponse {
+  string name = 1;
+  string shm_dir = 2;
+  uint64 ring_size = 3;
+  // Paths to the shm files the client should open.
+  string client_to_server_path = 4;
+  string server_to_client_path = 5;
+}
+
+message SendRequest {
+  // Which channel to use.
+  string channel_name = 1;
+  // Stream ID within the channel (for multiplexing).
+  uint32 stream_id = 2;
+  // Arbitrary key-value headers (gRPC metadata equivalent).
+  // These are small — actual payload is in /dev/shm.
+  map<string, bytes> headers = 3;
+  // How many bytes the client wrote to the shm ring.
+  // Server uses this to know how much to read.
+  uint64 payload_size = 4;
+}
+
+message SendResponse {
+  uint32 stream_id = 1;
+  // Status code (0 = ok, gRPC-style codes otherwise).
+  int32 status = 2;
+  string message = 3;
+  // If the server wrote a response to shm, its size.
+  uint64 response_payload_size = 4;
+}
+
+message StreamMessage {
+  uint32 stream_id = 1;
+  map<string, bytes> headers = 2;
+  // Payload size written to shm (0 if this is headers-only).
+  uint64 payload_size = 3;
+  // True if this is the last message in the stream.
+  bool end_stream = 4;
+}
+
+message DestroyChannelRequest {
+  string channel_name = 1;
+}
+
+message DestroyChannelResponse {
+  bool ok = 1;
+}

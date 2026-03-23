@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package enforcer.v1;
+
+import "enforcer/v1/ez_data_scope.proto";
+
+message EzPayloadData {
+  repeated bytes datagrams = 1;
+}
+
+message EzPayloadScope {
+  repeated EzDataScope datagram_scopes = 1;
+}
+
+message EzPayload {
+  EzPayloadScope payload_scope = 1;
+  EzPayloadData payload_data = 2;
+}

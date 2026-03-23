@@ -1,0 +1,9 @@
+services:
+  shm-server:
+    build: .
+    # Share /dev/shm between container and host for zero-copy IPC
+    volumes:
+      - /dev/shm:/dev/shm
+    # Alternative: use --ipc=host (gives access to ALL host shm)
+    # ipc: host
+    command: ["shm-server", "--name", "myapp"]

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package enforcer.v1;
+
+import "enforcer/v1/data_scope_type.proto";
+
+message EzScopeOwner {
+  bytes owner_uuid = 1;
+}
+
+message EzStaticScopeInfo {
+  DataScopeType scope_type = 1;
+  fixed64 scope_instance_id = 2;
+  EzScopeOwner scope_owner = 3;
+  repeated fixed64 subscope_instance_ids = 4;
+}
+
+message EzDynamicScopeInfo {
+  int64 version_sequence_num = 1;
+}
+
+message EzLocalScopeInfo {
+  int64 version_sequence_num = 1;
+}
+
+message EzDataScope {
+  EzStaticScopeInfo static_info = 1;
+  EzDynamicScopeInfo dynamic_info = 2;
+  EzLocalScopeInfo local_info = 3;
+}

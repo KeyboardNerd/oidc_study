@@ -1,0 +1,52 @@
+[package]
+name = "dev_shm_server"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+memmap2 = "0.9"
+nix = { version = "0.29", features = ["fs", "mman"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+env_logger = "0.11"
+thiserror = "2"
+ctrlc = "3"
+libc = "0.2"
+
+# gRPC / async
+tonic = "0.13"
+prost = "0.13"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.18"
+
+[build-dependencies]
+tonic-build = "0.13"
+
+[[bin]]
+name = "shm-server"
+path = "src/server.rs"
+
+[[bin]]
+name = "shm-client"
+path = "src/client.rs"
+
+[[example]]
+name = "echo_server"
+path = "examples/echo_server.rs"
+
+[[example]]
+name = "bench"
+path = "examples/bench.rs"
+
+[[example]]
+name = "resource_bench"
+path = "examples/resource_bench.rs"
+
+[[example]]
+name = "grpc_transfer"
+path = "examples/grpc_transfer.rs"
+
+[[example]]
+name = "ez_bridge_demo"
+path = "examples/ez_bridge_demo.rs"
